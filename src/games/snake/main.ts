@@ -6,8 +6,6 @@ import { AUTO, Game } from 'phaser';
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
-    width: 1024,
-    height: 768,
     parent: "game-container",
     backgroundColor: "0x333333",
     scene: [Main],
@@ -18,6 +16,13 @@ const config: Phaser.Types.Core.GameConfig = {
             debug: false,
         },
     },
+    render: {
+        antialias: true
+    },
+    scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    }
 };
 
 const StartGame = (parent: string) => {
@@ -28,7 +33,6 @@ const StartGame = (parent: string) => {
         width: parentElement?.clientWidth || 1024,
         height: parentElement?.clientHeight || 768
     });
-
 }
 
 export default StartGame;
