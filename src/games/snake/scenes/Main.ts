@@ -63,6 +63,7 @@ export class Main extends Scene {
         if (letterKey === correctLetter) {
             // Correct letter collected
             this.snake.grow(letterKey);
+            this.wrongHits = 0; // Reset wrong hits counter
             const isGameOver = this.letterManager.collectLetter(letterKey);
             if (isGameOver) {
                 this.isGameOver = true;
