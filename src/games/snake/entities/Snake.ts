@@ -91,4 +91,11 @@ export class Snake {
     public getHead() {
         return this.parts[0];
     }
+
+    public stopMovement() {
+        // Stop all existing tweens
+        this.parts.forEach(part => {
+            this.scene.tweens.killTweensOf(part.sprite);
+        });
+    }
 }

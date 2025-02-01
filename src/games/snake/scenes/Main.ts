@@ -12,6 +12,7 @@ export class Main extends Scene {
     private moveInterval: number = 150;
     private snakeSize: number = 40;
     private isGameOver: boolean = false;
+    private hasStarted: boolean = false;
 
     constructor() {
         super("Main");
@@ -80,31 +81,34 @@ export class Main extends Scene {
         // Handle input
         if (this.cursors.left.isDown && this.direction.x !== 1) {
             this.direction = { x: -1, y: 0 };
+            this.hasStarted = true;
         } else if (this.cursors.right.isDown && this.direction.x !== -1) {
             this.direction = { x: 1, y: 0 };
+            this.hasStarted = true;
         } else if (this.cursors.up.isDown && this.direction.y !== 1) {
             this.direction = { x: 0, y: -1 };
+            this.hasStarted = true;
         } else if (this.cursors.down.isDown && this.direction.y !== -1) {
             this.direction = { x: 0, y: 1 };
+            this.hasStarted = true;
         }
 
-        // Move snake
-        this.snake.move(this.direction, this.moveInterval);
+        // Only move if the game has started
+        if (this.hasStarted) {
+            // Move snake
+            this.snake.move(this.direction, this.moveInterval);
 
-        // Handle screen wrapping
-        const head = this.snake.getHead().sprite;
-        if (head.x < 0) {
-            head.x = this.cameras.main.width;
-        } else if (head.x > this.cameras.main.width) {
-            head.x = 0;
+            // Check for wall collision
+            const head = this.snake.getHead().sprite;
+            if (head.x < 0 || head.x > this.cameras.main.width ||
+                head.y < 0 || head.y > this.cameras.main.height) {
+                this.isGameOver = true;
+                this.snake.stopMovement(); // Stop the snake's movement
+                this.showGameOver();
+                return;
+            }
+
+            this.nextMoveTime = time + this.moveInterval;
         }
-
-        if (head.y < 0) {
-            head.y = this.cameras.main.height;
-        } else if (head.y > this.cameras.main.height) {
-            head.y = 0;
-        }
-
-        this.nextMoveTime = time + this.moveInterval;
     }
 }
