@@ -1,23 +1,16 @@
 import { Scene } from 'phaser';
-
-interface SnakePart {
-    sprite: Phaser.GameObjects.Arc;
-    letter?: string;
-    letterText?: Phaser.GameObjects.Text;
-}
+import { Snake } from '../entities/Snake';
+import { LetterManager } from '../entities/LetterManager';
+import { Direction } from '../types';
 
 export class Main extends Scene {
-    private snake: SnakePart[] = [];
-    private letters: Phaser.Physics.Arcade.Group;
-    private snakeSize: number = 40;
-    private moveSpeed: number = 200;
-    private direction: { x: number; y: number } = { x: 1, y: 0 };
+    private snake: Snake;
+    private letterManager: LetterManager;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-    private availableLetters: string[] = 'abcdefghijklmnopqrstuvwxyz'.split('');
-    private currentLetters: string[] = [];
+    private direction: Direction = { x: 1, y: 0 };
     private nextMoveTime: number = 0;
     private moveInterval: number = 150;
-    private nextLetterToCollect: string = 'a';
+    private snakeSize: number = 40;
     private isGameOver: boolean = false;
 
     constructor() {
@@ -26,7 +19,7 @@ export class Main extends Scene {
 
     preload() {
         // Load letter images
-        this.availableLetters.forEach(letter => {
+        'abcdefghijklmnopqrstuvwxyz'.split('').forEach(letter => {
             this.load.image(letter, `assets/letters/${letter.toUpperCase()}.png`);
         });
     }
@@ -35,80 +28,21 @@ export class Main extends Scene {
         // Initialize keyboard
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        // Create initial snake
-        this.createSnake();
-
-        // Create letters group
-        this.letters = this.physics.add.group();
+        // Create snake and letter manager
+        this.snake = new Snake(this, this.snakeSize);
+        this.letterManager = new LetterManager(this, this.snakeSize);
 
         // Generate first set of letters
-        this.generateNewLetters();
+        this.letterManager.generateNewLetters();
 
         // Add collision detection
         this.physics.add.overlap(
-            this.snake[0].sprite,
-            this.letters,
+            this.snake.getHead().sprite,
+            this.letterManager.getLetters(),
             this.handleLetterCollection,
             undefined,
             this
         );
-    }
-
-    private createSnake() {
-        const centerX = this.cameras.main.width / 2;
-        const centerY = this.cameras.main.height / 2;
-
-        // Create head as a circle
-        const head = this.add.circle(centerX, centerY, this.snakeSize / 2, 0xf97171);
-        this.physics.add.existing(head);
-
-        // Create head marker (could be first letter or a dot)
-        const headMarker = this.add.sprite(centerX, centerY, 'a')
-            .setDisplaySize(this.snakeSize * 0.8, this.snakeSize * 0.8)
-            .setAlpha(0); // Make it invisible
-
-        this.snake.push({
-            sprite: head,
-            letterText: headMarker as unknown as Phaser.GameObjects.Text
-        });
-    }
-
-    private generateNewLetters() {
-        // Clear existing letters
-        this.letters.clear(true, true);
-
-        // Get three random unique letters from available pool
-        this.currentLetters = [];
-        const tempPool = [...this.availableLetters];
-
-        // Always include the next required letter
-        this.currentLetters.push(this.nextLetterToCollect);
-        tempPool.splice(tempPool.indexOf(this.nextLetterToCollect), 1);
-
-        // Add two more random letters
-        for (let i = 0; i < 2 && tempPool.length > 0; i++) {
-            const randomIndex = Phaser.Math.Between(0, tempPool.length - 1);
-            this.currentLetters.push(tempPool.splice(randomIndex, 1)[0]);
-        }
-
-        // Shuffle the letters for random positions
-        this.currentLetters = Phaser.Utils.Array.Shuffle(this.currentLetters);
-
-        // Add letters to the game
-        this.currentLetters.forEach(letter => {
-            this.addLetter(letter);
-        });
-    }
-
-    private addLetter(key: string) {
-        const padding = this.snakeSize;
-        let x = Phaser.Math.Between(padding, this.cameras.main.width - padding);
-        let y = Phaser.Math.Between(padding, this.cameras.main.height - padding);
-
-        const letter = this.letters.create(x, y, key) as Phaser.Physics.Arcade.Sprite;
-        letter.setDisplaySize(this.snakeSize, this.snakeSize);
-        // Ensure crisp scaling
-        letter.setTexture(key);
     }
 
     private handleLetterCollection = (
@@ -118,49 +52,20 @@ export class Main extends Scene {
         const letterSprite = letter as Phaser.Physics.Arcade.Sprite;
         const letterKey = letterSprite.texture.key;
 
-        if (letterKey === this.nextLetterToCollect) {
-            // Remove letter from available pool
-            this.availableLetters = this.availableLetters.filter(l => l !== letterKey);
+        if (letterKey === this.letterManager.getNextLetterToCollect()) {
+            // Grow snake with collected letter
+            this.snake.grow(letterKey);
 
-            // Add new segment to snake
-            const lastPart = this.snake[this.snake.length - 1];
-            const newPart = this.add.circle(
-                lastPart.sprite.x,
-                lastPart.sprite.y,
-                this.snakeSize / 2,
-                0x202020
-            );
-            this.physics.add.existing(newPart);
-
-            // Add letter sprite on the segment
-            const letterText = this.add.sprite(
-                newPart.x,
-                newPart.y,
-                letterKey
-            ).setDisplaySize(this.snakeSize * 0.8, this.snakeSize * 0.8);
-
-            this.snake.push({
-                sprite: newPart,
-                letter: letterKey,
-                letterText: letterText as unknown as Phaser.GameObjects.Text
-            });
-
-            // Update next letter to collect
-            const nextIndex = this.availableLetters.indexOf(this.nextLetterToCollect) + 1;
-            console.log(`Next Index: ${nextIndex}`);
-
-            if (nextIndex < this.availableLetters.length) {
-                this.nextLetterToCollect = this.availableLetters[nextIndex];
-                this.generateNewLetters();
-            } else {
+            // Update letters and check for game over
+            const isGameOver = this.letterManager.collectLetter(letterKey);
+            if (isGameOver) {
                 this.isGameOver = true;
-                this.showGameOver(); // Show game over message
+                this.showGameOver();
             }
         }
     }
 
     private showGameOver() {
-        // Clear the screen or display a "Game Over" message
         this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2, 'Game Over', {
             fontSize: '64px',
             color: '#ffffff'
@@ -184,53 +89,21 @@ export class Main extends Scene {
         }
 
         // Move snake
-        for (let i = this.snake.length - 1; i > 0; i--) {
-            const part = this.snake[i].sprite;
-            const ahead = this.snake[i - 1].sprite;
-            this.tweens.add({
-                targets: part,
-                x: ahead.x,
-                y: ahead.y,
-                duration: this.moveInterval,
-                ease: 'Linear',
-                onUpdate: () => {
-                    if (this.snake[i].letterText) {
-                        this.snake[i].letterText!.setPosition(part.x, part.y);
-                    }
-                }
-            });
+        this.snake.move(this.direction, this.moveInterval);
+
+        // Handle screen wrapping
+        const head = this.snake.getHead().sprite;
+        if (head.x < 0) {
+            head.x = this.cameras.main.width;
+        } else if (head.x > this.cameras.main.width) {
+            head.x = 0;
         }
 
-        // Move head
-        const head = this.snake[0].sprite;
-        let newX = head.x + this.direction.x * this.snakeSize;
-        let newY = head.y + this.direction.y * this.snakeSize;
-
-        // Wrap around screen
-        if (newX < 0) {
-            newX = this.cameras.main.width;
-        } else if (newX > this.cameras.main.width) {
-            newX = 0;
+        if (head.y < 0) {
+            head.y = this.cameras.main.height;
+        } else if (head.y > this.cameras.main.height) {
+            head.y = 0;
         }
-
-        if (newY < 0) {
-            newY = this.cameras.main.height;
-        } else if (newY > this.cameras.main.height) {
-            newY = 0;
-        }
-
-        this.tweens.add({
-            targets: head,
-            x: newX,
-            y: newY,
-            duration: this.moveInterval,
-            ease: 'Linear',
-            onUpdate: () => {
-                if (this.snake[0].letterText) {
-                    this.snake[0].letterText!.setPosition(head.x, head.y);
-                }
-            }
-        });
 
         this.nextMoveTime = time + this.moveInterval;
     }
