@@ -27,7 +27,7 @@ export class Main extends Scene {
 
     create() {
         // Initialize keyboard
-        this.cursors = this.input.keyboard.createCursorKeys();
+        this.cursors = this.input.keyboard!.createCursorKeys();
 
         // Create snake and letter manager
         this.snake = new Snake(this, this.snakeSize);
@@ -40,7 +40,12 @@ export class Main extends Scene {
         this.physics.add.overlap(
             this.snake.getHead().sprite,
             this.letterManager.getLetters(),
-            this.handleLetterCollection,
+            (object1, object2) => {
+                this.handleLetterCollection(
+                    object1 as Phaser.Types.Physics.Arcade.GameObjectWithBody,
+                    object2 as Phaser.Types.Physics.Arcade.GameObjectWithBody
+                );
+            },
             undefined,
             this
         );
