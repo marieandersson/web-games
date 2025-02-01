@@ -2,7 +2,7 @@
 
 This is a Phaser 3 project template that uses the Next.js framework. It includes a bridge for React to Phaser game communication, hot-reloading for quick development workflow and scripts to generate production-ready builds.
 
-### Versions
+## Versions
 
 This template has been updated for:
 
@@ -50,6 +50,7 @@ We have provided a default project structure to get you started. This is as foll
 - `src/game/scenes/` - The Phaser Scenes are in this folder.
 - `public/favicon.png` - The default favicon for the project.
 - `public/assets` - Contains the static assets used by the game.
+
 ## React Bridge
 
 The `PhaserGame.tsx` component is the bridge between React and Phaser. It initializes the Phaser game and passes events between the two.
@@ -81,7 +82,6 @@ In Phaser, the Scene is the lifeblood of your game. It is where you sprites, gam
 You can get the current Phaser Scene from the component event `"current-active-scene"`. In order to do this, you need to emit the event `"current-scene-ready"` from the Phaser Scene class. This event should be emitted when the scene is ready to be used. You can see this done in all of the Scenes in our template.
 
 **Important**: When you add a new Scene to your game, make sure you expose to React by emitting the `"current-scene-ready"` event via the `EventBus`, like this:
-
 
 ```ts
 class MyScene extends Phaser.Scene
@@ -117,7 +117,7 @@ const ReactComponent = () => {
     const phaserRef = useRef<IRefPhaserGame>(); // you can access to this ref from phaserRef.current
 
     const onCurrentActiveScene = (scene: Phaser.Scene) => {
-    
+
         // This is invoked
 
     }
@@ -209,20 +209,3 @@ After:
 ```
 
 Either of these will stop `log.js` from running. If you do decide to do this, please could you at least join our Discord and tell us which template you're using! Or send us a quick email. Either will be super-helpful, thank you.
-
-## Join the Phaser Community!
-
-We love to see what developers like you create with Phaser! It really motivates us to keep improving. So please join our community and show-off your work 😄
-
-**Visit:** The [Phaser website](https://phaser.io) and follow on [Phaser Twitter](https://twitter.com/phaser_)<br />
-**Play:** Some of the amazing games [#madewithphaser](https://twitter.com/search?q=%23madewithphaser&src=typed_query&f=live)<br />
-**Learn:** [API Docs](https://newdocs.phaser.io), [Support Forum](https://phaser.discourse.group/) and [StackOverflow](https://stackoverflow.com/questions/tagged/phaser-framework)<br />
-**Discord:** Join us on [Discord](https://discord.gg/phaser)<br />
-**Code:** 2000+ [Examples](https://labs.phaser.io)<br />
-**Read:** The [Phaser World](https://phaser.io/community/newsletter) Newsletter<br />
-
-Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, pixels and love.
-
-The Phaser logo and characters are &copy; 2011 - 2024 Phaser Studio Inc.
-
-All rights reserved.
