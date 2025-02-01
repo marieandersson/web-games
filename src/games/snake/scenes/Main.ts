@@ -14,6 +14,7 @@ export class Main extends Scene {
     private isGameOver: boolean = false;
     private hasStarted: boolean = false;
     private wrongHits: number = 0;
+    private isSuccess: boolean = false;
 
     constructor() {
         super("Main");
@@ -63,11 +64,13 @@ export class Main extends Scene {
         if (letterKey === correctLetter) {
             // Correct letter collected
             this.snake.grow(letterKey);
-            this.wrongHits = 0; // Reset wrong hits counter
+            this.wrongHits = 0;
             const isGameOver = this.letterManager.collectLetter(letterKey);
             if (isGameOver) {
                 this.isGameOver = true;
-                this.showGameOver();
+                this.isSuccess = true;
+                this.snake.stopMovement();
+                this.showSuccess();
             }
         } else {
             // Wrong letter hit
@@ -75,7 +78,6 @@ export class Main extends Scene {
             this.letterManager.removeLetter(letterKey);
 
             if (this.wrongHits >= 2 || this.letterManager.getLetterCount() === 1) {
-                // Game over if two wrong hits or only the correct letter remains
                 this.isGameOver = true;
                 this.snake.stopMovement();
                 this.showGameOver();
@@ -83,11 +85,29 @@ export class Main extends Scene {
         }
     }
 
+    private showSuccess() {
+        this.add.text(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            'Congratulations!\nYou completed the alphabet!',
+            {
+                fontSize: '48px',
+                color: '#00ff00',
+                align: 'center'
+            }
+        ).setOrigin(0.5);
+    }
+
     private showGameOver() {
-        this.add.text(this.cameras.main.width / 2, this.cameras.main.height / 2, 'Game Over', {
-            fontSize: '64px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
+        this.add.text(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            'Game Over',
+            {
+                fontSize: '64px',
+                color: '#ff0000'
+            }
+        ).setOrigin(0.5);
     }
 
     update(time: number) {

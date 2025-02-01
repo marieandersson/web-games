@@ -20,7 +20,7 @@ const config: Phaser.Types.Core.GameConfig = {
         antialias: true
     },
     scale: {
-        mode: Phaser.Scale.RESIZE,
+        // mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
     }
 };
@@ -30,8 +30,8 @@ const StartGame = (parent: string) => {
     return new Game({
         ...config,
         parent,
-        width: parentElement?.clientWidth || 1024,
-        height: parentElement?.clientHeight || 768
+        width: 800,
+        height: 800
     });
 }
 
