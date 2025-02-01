@@ -60,4 +60,17 @@ export class LetterManager {
     public getNextLetterToCollect() {
         return this.nextLetterToCollect;
     }
+    public removeLetter(letterKey: string) {
+        this.letters.children.each((child: Phaser.GameObjects.GameObject) => {
+            const sprite = child as Phaser.Physics.Arcade.Sprite;
+            if (sprite.texture.key === letterKey) {
+                sprite.destroy();
+            }
+            return true;
+        });
+    }
+
+    public getLetterCount() {
+        return this.letters.countActive();
+    }
 }

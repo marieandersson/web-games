@@ -13,6 +13,7 @@ export class Main extends Scene {
     private snakeSize: number = 40;
     private isGameOver: boolean = false;
     private hasStarted: boolean = false;
+    private wrongHits: number = 0;
 
     constructor() {
         super("Main");
@@ -57,15 +58,25 @@ export class Main extends Scene {
     ) => {
         const letterSprite = letter as Phaser.Physics.Arcade.Sprite;
         const letterKey = letterSprite.texture.key;
+        const correctLetter = this.letterManager.getNextLetterToCollect();
 
-        if (letterKey === this.letterManager.getNextLetterToCollect()) {
-            // Grow snake with collected letter
+        if (letterKey === correctLetter) {
+            // Correct letter collected
             this.snake.grow(letterKey);
-
-            // Update letters and check for game over
             const isGameOver = this.letterManager.collectLetter(letterKey);
             if (isGameOver) {
                 this.isGameOver = true;
+                this.showGameOver();
+            }
+        } else {
+            // Wrong letter hit
+            this.wrongHits++;
+            this.letterManager.removeLetter(letterKey);
+
+            if (this.wrongHits >= 2 || this.letterManager.getLetterCount() === 1) {
+                // Game over if two wrong hits or only the correct letter remains
+                this.isGameOver = true;
+                this.snake.stopMovement();
                 this.showGameOver();
             }
         }

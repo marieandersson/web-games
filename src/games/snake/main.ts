@@ -7,7 +7,7 @@ import { AUTO, Game } from 'phaser';
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
     parent: "game-container",
-    backgroundColor: "0x333333",
+    backgroundColor: "0x222222",
     scene: [Main],
     physics: {
         default: "arcade",
