@@ -25,13 +25,15 @@
         "dev": "node log.js dev & next dev -p 8080",
         "build": "node log.js build & next build",
         "dev-nolog": "next dev -p 8080",
-        "build-nolog": "next build"
+        "build-nolog": "next build",
+        "resize-images": "npx ts-node scripts/resizeImages.ts"
     },
     "dependencies": {
         "next": "^15.0.0",
         "phaser": "^3.86.0",
         "react": "^18",
-        "react-dom": "^18"
+        "react-dom": "^18",
+        "sharp": "^0.33.5"
     },
     "devDependencies": {
         "@types/node": "^20",
