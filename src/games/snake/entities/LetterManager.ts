@@ -1,31 +1,48 @@
 import { Scene } from 'phaser';
 import { GRID_SIZE, GRID_OFFSET } from '../utils/Constants';
+import { Snake } from './Snake';
 
 export class LetterManager {
     private scene: Scene;
     private letters: Phaser.Physics.Arcade.Group;
+    private snake: Snake;
     private availableLetters: string[] = 'abcdefghijklmnopqrstuvwxyzåäö'.split('');
     private currentLetters: string[] = [];
     private nextLetterToCollect: string = 'a';
     private letterSize: number;
 
-    constructor(scene: Scene, letterSize: number) {
+    constructor(scene: Scene, letterSize: number, snake: Snake) {
         this.scene = scene;
         this.letterSize = letterSize;
         this.letters = this.scene.physics.add.group();
+        this.snake = snake;
     }
 
     private isPositionValid(x: number, y: number): boolean {
         let isValid = true;
+
+        // Check other letters
         this.letters.children.each((child: Phaser.GameObjects.GameObject) => {
             const letter = child as Phaser.Physics.Arcade.Sprite;
             const distance = Phaser.Math.Distance.Between(x, y, letter.x, letter.y);
-            if (distance < this.letterSize * 1.5) { // 1.5 times letter size for spacing
+            if (distance < this.letterSize * 1.5) {
                 isValid = false;
-                return false; // Stop iterating
+                return false;
             }
             return true;
         });
+
+        // Check snake parts
+        if (isValid) {
+            for (const part of this.snake.getParts()) {
+                const distance = Phaser.Math.Distance.Between(x, y, part.sprite.x, part.sprite.y);
+                if (distance < this.letterSize * 1.5) {
+                    isValid = false;
+                    break;
+                }
+            }
+        }
+
         return isValid;
     }
 

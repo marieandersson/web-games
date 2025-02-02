@@ -57,7 +57,7 @@ export class Main extends Scene {
 
         // Create snake and letter manager
         this.snake = new Snake(this, this.snakeSize);
-        this.letterManager = new LetterManager(this, this.snakeSize);
+        this.letterManager = new LetterManager(this, this.snakeSize, this.snake);
 
         // Generate first set of letters
         this.letterManager.generateNewLetters();
@@ -178,7 +178,7 @@ export class Main extends Scene {
 
         // Recreate game objects
         this.snake = new Snake(this, this.snakeSize);
-        this.letterManager = new LetterManager(this, this.snakeSize);
+        this.letterManager = new LetterManager(this, this.snakeSize, this.snake);
         this.letterManager.generateNewLetters();
 
         // Reset collision detection

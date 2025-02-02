@@ -110,4 +110,8 @@ export class Snake {
             this.scene.tweens.killTweensOf(part.sprite);
         });
     }
+
+    public getParts(): SnakePart[] {
+        return this.parts;
+    }
 }
