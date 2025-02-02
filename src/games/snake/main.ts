@@ -19,19 +19,25 @@ const config: Phaser.Types.Core.GameConfig = {
     render: {
         antialias: true
     },
-    scale: {
-        // mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    }
 };
 
 const StartGame = (parent: string) => {
     const parentElement = document.getElementById(parent);
+    const maxSize = 800;
+
+    // Calculate the smallest dimension
+    const smallestDimension = Math.min(
+        parentElement ? parentElement?.clientWidth - 48 : maxSize,
+        parentElement ? parentElement?.clientHeight - 48 : maxSize,
+        maxSize
+    );
+
     return new Game({
         ...config,
         parent,
-        width: 800,
-        height: 800
+        width: smallestDimension,
+        height: smallestDimension
+
     });
 }
 
