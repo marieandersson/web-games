@@ -7,6 +7,7 @@ export class Main extends Scene {
     private snake: Snake;
     private letterManager: LetterManager;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
+    private enterKey!: Phaser.Input.Keyboard.Key;
     private direction: Direction = { x: 1, y: 0 };
     private nextMoveTime: number = 0;
     private moveInterval: number = 150;
@@ -15,6 +16,7 @@ export class Main extends Scene {
     private hasStarted: boolean = false;
     private wrongHits: number = 0;
     private isSuccess: boolean = false;
+    private canRestart: boolean = false;
 
     constructor() {
         super("Main");
@@ -22,7 +24,7 @@ export class Main extends Scene {
 
     preload() {
         // Load letter images
-        'abcdefghijklmnopqrstuvwxyz'.split('').forEach(letter => {
+        'abcdefghijklmnopqrstuvwxyzåäö'.split('').forEach(letter => {
             this.load.image(letter, `assets/letters/${letter.toUpperCase()}.png`);
         });
     }
@@ -30,6 +32,7 @@ export class Main extends Scene {
     create() {
         // Initialize keyboard
         this.cursors = this.input.keyboard!.createCursorKeys();
+        this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
 
         // Create snake and letter manager
         this.snake = new Snake(this, this.snakeSize);
@@ -96,6 +99,16 @@ export class Main extends Scene {
                 align: 'center'
             }
         ).setOrigin(0.5);
+
+        this.add.text(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2 + 80,
+            'Press ENTER to restart',
+            {
+                fontSize: '32px',
+                color: '#ffffff'
+            }
+        ).setOrigin(0.5);
     }
 
     private showGameOver() {
@@ -108,10 +121,67 @@ export class Main extends Scene {
                 color: '#ff0000'
             }
         ).setOrigin(0.5);
+
+        this.add.text(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2 + 80,
+            'Press ENTER to restart',
+            {
+                fontSize: '32px',
+                color: '#ffffff'
+            }
+        ).setOrigin(0.5);
+    }
+
+    private resetGame() {
+        // Clear existing game objects
+        this.snake.stopMovement();
+        this.children.removeAll();
+
+        // Reset all state variables
+        this.isGameOver = false;
+        this.isSuccess = false;
+        this.hasStarted = false;
+        this.wrongHits = 0;
+        this.direction = { x: 1, y: 0 };
+        this.nextMoveTime = 0;
+        this.canRestart = false;
+
+        // Recreate game objects
+        this.snake = new Snake(this, this.snakeSize);
+        this.letterManager = new LetterManager(this, this.snakeSize);
+        this.letterManager.generateNewLetters();
+
+        // Reset collision detection
+        this.physics.add.overlap(
+            this.snake.getHead().sprite,
+            this.letterManager.getLetters(),
+            (object1, object2) => {
+                this.handleLetterCollection(
+                    object1 as Phaser.Types.Physics.Arcade.GameObjectWithBody,
+                    object2 as Phaser.Types.Physics.Arcade.GameObjectWithBody
+                );
+            },
+            undefined,
+            this
+        );
     }
 
     update(time: number) {
-        if (this.isGameOver || time < this.nextMoveTime) {
+        if (this.isGameOver) {
+            // Wait for Enter key to be released before allowing restart
+            if (!this.enterKey.isDown) {
+                this.canRestart = true;
+            }
+
+            if (this.canRestart && this.enterKey.isDown) {
+                this.resetGame();
+                return;
+            }
+            return;
+        }
+
+        if (time < this.nextMoveTime) {
             return;
         }
 
