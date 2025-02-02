@@ -6,10 +6,13 @@ export class Snake {
     private parts: SnakePart[] = [];
     private scene: Scene;
     private snakeSize: number;
+    private isGrowing: boolean = false;
+    private moveInterval: number;
 
-    constructor(scene: Scene, snakeSize: number) {
+    constructor(scene: Scene, snakeSize: number, moveInterval: number) {
         this.scene = scene;
         this.snakeSize = snakeSize;
+        this.moveInterval = moveInterval;
         this.createInitialSnake();
     }
 
@@ -78,6 +81,7 @@ export class Snake {
     }
 
     public grow(letterKey: string) {
+        this.isGrowing = true;
         const lastPart = this.parts[this.parts.length - 1];
         const newPart = this.scene.add.circle(
             lastPart.sprite.x,
@@ -98,6 +102,14 @@ export class Snake {
             letter: letterKey,
             letterText: letterText as unknown as Phaser.GameObjects.Text
         });
+
+        this.scene.time.delayedCall(this.moveInterval, () => {
+            this.isGrowing = false;
+        });
+    }
+
+    public isCurrentlyGrowing(): boolean {
+        return this.isGrowing;
     }
 
     public getHead() {

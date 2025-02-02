@@ -56,7 +56,7 @@ export class Main extends Scene {
         this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
 
         // Create snake and letter manager
-        this.snake = new Snake(this, this.snakeSize);
+        this.snake = new Snake(this, this.snakeSize, this.moveInterval);
         this.letterManager = new LetterManager(this, this.snakeSize, this.snake);
 
         // Generate first set of letters
@@ -177,7 +177,7 @@ export class Main extends Scene {
         this.canRestart = false;
 
         // Recreate game objects
-        this.snake = new Snake(this, this.snakeSize);
+        this.snake = new Snake(this, this.snakeSize, this.moveInterval);
         this.letterManager = new LetterManager(this, this.snakeSize, this.snake);
         this.letterManager.generateNewLetters();
 
@@ -196,6 +196,28 @@ export class Main extends Scene {
             undefined,
             this
         );
+    }
+
+    private isOnSameGridCell(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject): boolean {
+        const sprite1 = obj1 as Phaser.GameObjects.Sprite;
+        const sprite2 = obj2 as Phaser.GameObjects.Sprite;
+        const gridX1 = Math.floor(sprite1.x / GRID_SIZE);
+        const gridY1 = Math.floor(sprite1.y / GRID_SIZE);
+        const gridX2 = Math.floor(sprite2.x / GRID_SIZE);
+        const gridY2 = Math.floor(sprite2.y / GRID_SIZE);
+
+        return gridX1 === gridX2 && gridY1 === gridY2;
+    }
+
+    private isExactlyOnSamePosition(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject): boolean {
+        const sprite1 = obj1 as Phaser.GameObjects.Sprite;
+        const sprite2 = obj2 as Phaser.GameObjects.Sprite;
+        // Round positions to handle floating point imprecision
+        const x1 = Math.round(sprite1.x);
+        const y1 = Math.round(sprite1.y);
+        const x2 = Math.round(sprite2.x);
+        const y2 = Math.round(sprite2.y);
+        return x1 === x2 && y1 === y2;
     }
 
     update(time: number) {
@@ -241,22 +263,25 @@ export class Main extends Scene {
             if (head.x < 0 || head.x > this.cameras.main.width ||
                 head.y < 0 || head.y > this.cameras.main.height) {
                 this.isGameOver = true;
-                this.snake.stopMovement(); // Stop the snake's movement
+                this.snake.stopMovement();
                 this.showGameOver();
                 return;
             }
 
+            // Check for self collision using grid cells
+            const parts = this.snake.getParts();
+            if (parts.length > 1 && !this.snake.isCurrentlyGrowing()) {  // Only check when not growing
+                for (let i = 1; i < parts.length; i++) {
+                    if (this.isOnSameGridCell(head, parts[i].sprite)) {
+                        this.isGameOver = true;
+                        this.snake.stopMovement();
+                        this.showGameOver();
+                        return;
+                    }
+                }
+            }
+
             this.nextMoveTime = time + this.moveInterval;
         }
-    }
-    private isOnSameGridCell(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject): boolean {
-        const sprite1 = obj1 as Phaser.GameObjects.Sprite;
-        const sprite2 = obj2 as Phaser.GameObjects.Sprite;
-        const gridX1 = Math.floor(sprite1.x / GRID_SIZE);
-        const gridY1 = Math.floor(sprite1.y / GRID_SIZE);
-        const gridX2 = Math.floor(sprite2.x / GRID_SIZE);
-        const gridY2 = Math.floor(sprite2.y / GRID_SIZE);
-
-        return gridX1 === gridX2 && gridY1 === gridY2;
     }
 }
