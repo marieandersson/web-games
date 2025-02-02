@@ -1,9 +1,10 @@
 import { Scene } from 'phaser';
+import { GRID_SIZE, GRID_OFFSET } from '../utils/Constants';
 
 export class LetterManager {
     private scene: Scene;
     private letters: Phaser.Physics.Arcade.Group;
-    private availableLetters: string[] = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    private availableLetters: string[] = 'abcdefghijklmnopqrstuvwxyzåäö'.split('');
     private currentLetters: string[] = [];
     private nextLetterToCollect: string = 'a';
     private letterSize: number;
@@ -28,14 +29,26 @@ export class LetterManager {
         return isValid;
     }
 
+    private snapToGrid(value: number): number {
+        return Math.floor(value / GRID_SIZE) * GRID_SIZE + GRID_OFFSET;
+    }
+
     private getValidPosition(): { x: number, y: number } {
-        const padding = this.letterSize;
-        const maxAttempts = 100; // Prevent infinite loop
+        const padding = GRID_SIZE;
+        const maxAttempts = 100;
         let attempts = 0;
 
+        const gridCols = Math.floor((this.scene.cameras.main.width - padding * 2) / GRID_SIZE);
+        const gridRows = Math.floor((this.scene.cameras.main.height - padding * 2) / GRID_SIZE);
+
         while (attempts < maxAttempts) {
-            const x = Phaser.Math.Between(padding, this.scene.cameras.main.width - padding);
-            const y = Phaser.Math.Between(padding, this.scene.cameras.main.height - padding);
+            // Get position in grid coordinates
+            const gridX = Phaser.Math.Between(1, gridCols - 1);
+            const gridY = Phaser.Math.Between(1, gridRows - 1);
+
+            // Convert to pixel coordinates (centered in grid cell)
+            const x = (gridX * GRID_SIZE) + GRID_OFFSET;
+            const y = (gridY * GRID_SIZE) + GRID_OFFSET;
 
             if (this.isPositionValid(x, y)) {
                 return { x, y };
@@ -43,11 +56,12 @@ export class LetterManager {
             attempts++;
         }
 
-        // If we couldn't find a valid position after max attempts,
-        // return a position in the center (this should rarely happen)
+        // Default to center of a grid cell
+        const centerGridX = Math.floor(this.scene.cameras.main.width / (2 * GRID_SIZE));
+        const centerGridY = Math.floor(this.scene.cameras.main.height / (2 * GRID_SIZE));
         return {
-            x: this.scene.cameras.main.width / 2,
-            y: this.scene.cameras.main.height / 2
+            x: (centerGridX * GRID_SIZE) + GRID_OFFSET,
+            y: (centerGridY * GRID_SIZE) + GRID_OFFSET
         };
     }
 

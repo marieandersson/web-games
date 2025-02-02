@@ -1,5 +1,6 @@
 import { Scene } from 'phaser';
 import { SnakePart, Direction } from '../types';
+import { GRID_SIZE, GRID_OFFSET } from '../utils/Constants';
 
 export class Snake {
     private parts: SnakePart[] = [];
@@ -12,9 +13,13 @@ export class Snake {
         this.createInitialSnake();
     }
 
+    private snapToGrid(value: number): number {
+        return Math.floor(value / GRID_SIZE) * GRID_SIZE + GRID_OFFSET;
+    }
+
     private createInitialSnake() {
-        const centerX = this.scene.cameras.main.width / 2;
-        const centerY = this.scene.cameras.main.height / 2;
+        const centerX = this.snapToGrid(this.scene.cameras.main.width / 2);
+        const centerY = this.snapToGrid(this.scene.cameras.main.height / 2);
 
         const head = this.scene.add.circle(centerX, centerY, this.snakeSize / 2, 0xf97171);
         this.scene.physics.add.existing(head);
@@ -33,10 +38,13 @@ export class Snake {
         for (let i = this.parts.length - 1; i > 0; i--) {
             const part = this.parts[i];
             const ahead = this.parts[i - 1];
+            const targetX = ahead.sprite.x;
+            const targetY = ahead.sprite.y;
+
             this.scene.tweens.add({
                 targets: part.sprite,
-                x: ahead.sprite.x,
-                y: ahead.sprite.y,
+                x: targetX,
+                y: targetY,
                 duration: moveInterval,
                 ease: 'Linear',
                 onUpdate: () => {
@@ -48,13 +56,17 @@ export class Snake {
         }
 
         const head = this.parts[0].sprite;
-        const newX = head.x + direction.x * this.snakeSize;
-        const newY = head.y + direction.y * this.snakeSize;
+        const targetX = head.x + (direction.x * GRID_SIZE);
+        const targetY = head.y + (direction.y * GRID_SIZE);
+
+        // Ensure target position is grid-aligned
+        const alignedX = Math.round((targetX - GRID_OFFSET) / GRID_SIZE) * GRID_SIZE + GRID_OFFSET;
+        const alignedY = Math.round((targetY - GRID_OFFSET) / GRID_SIZE) * GRID_SIZE + GRID_OFFSET;
 
         this.scene.tweens.add({
             targets: head,
-            x: newX,
-            y: newY,
+            x: alignedX,
+            y: alignedY,
             duration: moveInterval,
             ease: 'Linear',
             onUpdate: () => {

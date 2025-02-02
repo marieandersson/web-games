@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { Snake } from '../entities/Snake';
 import { LetterManager } from '../entities/LetterManager';
 import { Direction } from '../types';
+import { GRID_SIZE } from '../utils/Constants';
 
 export class Main extends Scene {
     private snake: Snake;
@@ -29,7 +30,27 @@ export class Main extends Scene {
         });
     }
 
+    private drawGrid() {
+        const graphics = this.add.graphics();
+
+        // Draw cells with a very dark background
+        graphics.lineStyle(1, 0x333333);
+        graphics.fillStyle(0x222222);
+
+        for (let x = 0; x < this.cameras.main.width; x += GRID_SIZE) {
+            for (let y = 0; y < this.cameras.main.height; y += GRID_SIZE) {
+                // Draw cell background
+                graphics.fillRect(x, y, GRID_SIZE, GRID_SIZE);
+                // Draw cell border
+                graphics.strokeRect(x, y, GRID_SIZE, GRID_SIZE);
+            }
+        }
+    }
+
     create() {
+        // Draw grid first so it's behind everything
+        this.drawGrid();
+
         // Initialize keyboard
         this.cursors = this.input.keyboard!.createCursorKeys();
         this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
@@ -41,15 +62,17 @@ export class Main extends Scene {
         // Generate first set of letters
         this.letterManager.generateNewLetters();
 
-        // Add collision detection
+        // Add collision detection with custom check
         this.physics.add.overlap(
             this.snake.getHead().sprite,
             this.letterManager.getLetters(),
             (object1, object2) => {
-                this.handleLetterCollection(
-                    object1 as Phaser.Types.Physics.Arcade.GameObjectWithBody,
-                    object2 as Phaser.Types.Physics.Arcade.GameObjectWithBody
-                );
+                if (this.isOnSameGridCell(object1 as unknown as Phaser.GameObjects.GameObject, object2 as unknown as Phaser.GameObjects.GameObject)) {
+                    this.handleLetterCollection(
+                        object1 as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody,
+                        object2 as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody
+                    );
+                }
             },
             undefined,
             this
@@ -134,9 +157,15 @@ export class Main extends Scene {
     }
 
     private resetGame() {
+        // Stop all physics
+        this.physics.world.colliders.destroy();
+
         // Clear existing game objects
         this.snake.stopMovement();
         this.children.removeAll();
+
+        // Draw grid first
+        this.drawGrid();
 
         // Reset all state variables
         this.isGameOver = false;
@@ -157,10 +186,12 @@ export class Main extends Scene {
             this.snake.getHead().sprite,
             this.letterManager.getLetters(),
             (object1, object2) => {
-                this.handleLetterCollection(
-                    object1 as Phaser.Types.Physics.Arcade.GameObjectWithBody,
-                    object2 as Phaser.Types.Physics.Arcade.GameObjectWithBody
-                );
+                if (this.isOnSameGridCell(object1 as unknown as Phaser.GameObjects.GameObject, object2 as unknown as Phaser.GameObjects.GameObject)) {
+                    this.handleLetterCollection(
+                        object1 as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody,
+                        object2 as unknown as Phaser.Types.Physics.Arcade.GameObjectWithBody
+                    );
+                }
             },
             undefined,
             this
@@ -217,5 +248,15 @@ export class Main extends Scene {
 
             this.nextMoveTime = time + this.moveInterval;
         }
+    }
+    private isOnSameGridCell(obj1: Phaser.GameObjects.GameObject, obj2: Phaser.GameObjects.GameObject): boolean {
+        const sprite1 = obj1 as Phaser.GameObjects.Sprite;
+        const sprite2 = obj2 as Phaser.GameObjects.Sprite;
+        const gridX1 = Math.floor(sprite1.x / GRID_SIZE);
+        const gridY1 = Math.floor(sprite1.y / GRID_SIZE);
+        const gridX2 = Math.floor(sprite2.x / GRID_SIZE);
+        const gridY2 = Math.floor(sprite2.y / GRID_SIZE);
+
+        return gridX1 === gridX2 && gridY1 === gridY2;
     }
 }
