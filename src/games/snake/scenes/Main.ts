@@ -8,7 +8,7 @@ export class Main extends Scene {
     private snake: Snake;
     private letterManager: LetterManager;
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-    private enterKey!: Phaser.Input.Keyboard.Key;
+    private spaceKey!: Phaser.Input.Keyboard.Key;
     private direction: Direction = { x: 1, y: 0 };
     private nextMoveTime: number = 0;
     private moveInterval: number = 150;
@@ -53,7 +53,7 @@ export class Main extends Scene {
 
         // Initialize keyboard
         this.cursors = this.input.keyboard!.createCursorKeys();
-        this.enterKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+        this.spaceKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
         // Create snake and letter manager
         this.snake = new Snake(this, this.snakeSize, this.moveInterval);
@@ -77,6 +77,17 @@ export class Main extends Scene {
             undefined,
             this
         );
+
+        // Add initial instruction text
+        this.add.text(
+            this.cameras.main.width / 2,
+            this.cameras.main.height / 2,
+            'Press SPACE to start',
+            {
+                fontSize: '32px',
+                color: '#ffffff'
+            }
+        ).setOrigin(0.5);
     }
 
     private handleLetterCollection = (
@@ -126,7 +137,7 @@ export class Main extends Scene {
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2 + 80,
-            'Press ENTER to restart',
+            'Press SPACE to restart',
             {
                 fontSize: '32px',
                 color: '#ffffff'
@@ -148,7 +159,7 @@ export class Main extends Scene {
         this.add.text(
             this.cameras.main.width / 2,
             this.cameras.main.height / 2 + 80,
-            'Press ENTER to restart',
+            'Press SPACE to restart',
             {
                 fontSize: '32px',
                 color: '#ffffff'
@@ -222,14 +233,24 @@ export class Main extends Scene {
 
     update(time: number) {
         if (this.isGameOver) {
-            // Wait for Enter key to be released before allowing restart
-            if (!this.enterKey.isDown) {
+            if (!this.spaceKey.isDown) {
                 this.canRestart = true;
             }
 
-            if (this.canRestart && this.enterKey.isDown) {
+            if (this.canRestart && this.spaceKey.isDown) {
                 this.resetGame();
                 return;
+            }
+            return;
+        }
+
+        if (!this.hasStarted) {
+            if (this.spaceKey.isDown) {
+                this.hasStarted = true;
+                // Clear the start instruction text
+                this.children.list
+                    .filter(child => child instanceof Phaser.GameObjects.Text)
+                    .forEach(child => child.destroy());
             }
             return;
         }
