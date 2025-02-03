@@ -11,6 +11,8 @@ function App()
             <ABCSnake ref={phaserRef} />
         </div>
     );
+
+
 }
 
 export default App

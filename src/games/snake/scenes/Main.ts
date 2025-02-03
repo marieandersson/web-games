@@ -3,6 +3,7 @@ import { Snake } from '../entities/Snake';
 import { LetterManager } from '../entities/LetterManager';
 import { Direction } from '../types';
 import { GRID_SIZE } from '../utils/Constants';
+import { EventBus } from "../EventBus";
 
 export class Main extends Scene {
     private snake: Snake;
@@ -78,16 +79,8 @@ export class Main extends Scene {
             this
         );
 
-        // Add initial instruction text
-        this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2,
-            'Press SPACE to start',
-            {
-                fontSize: '32px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5);
+        // Emit scene ready event
+        EventBus.emit('scene-ready');
     }
 
     private handleLetterCollection = (
@@ -247,10 +240,6 @@ export class Main extends Scene {
         if (!this.hasStarted) {
             if (this.spaceKey.isDown) {
                 this.hasStarted = true;
-                // Clear the start instruction text
-                this.children.list
-                    .filter(child => child instanceof Phaser.GameObjects.Text)
-                    .forEach(child => child.destroy());
             }
             return;
         }
