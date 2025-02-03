@@ -116,48 +116,11 @@ export class Main extends Scene {
     }
 
     private showSuccess() {
-        this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2,
-            'Congratulations!\nYou completed the alphabet!',
-            {
-                fontSize: '48px',
-                color: '#00ff00',
-                align: 'center'
-            }
-        ).setOrigin(0.5);
-
-        this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2 + 80,
-            'Press SPACE to restart',
-            {
-                fontSize: '32px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5);
+        EventBus.emit('game-success');
     }
 
     private showGameOver() {
-        this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2,
-            'Game Over',
-            {
-                fontSize: '64px',
-                color: '#ff0000'
-            }
-        ).setOrigin(0.5);
-
-        this.add.text(
-            this.cameras.main.width / 2,
-            this.cameras.main.height / 2 + 80,
-            'Press SPACE to restart',
-            {
-                fontSize: '32px',
-                color: '#ffffff'
-            }
-        ).setOrigin(0.5);
+        EventBus.emit('game-over');
     }
 
     private resetGame() {
@@ -240,6 +203,7 @@ export class Main extends Scene {
         if (!this.hasStarted) {
             if (this.spaceKey.isDown) {
                 this.hasStarted = true;
+                EventBus.emit('game-started');
             }
             return;
         }
