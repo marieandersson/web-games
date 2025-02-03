@@ -29,11 +29,14 @@
         "resize-images": "npx ts-node scripts/resizeImages.ts"
     },
     "dependencies": {
+        "@tailwindcss/postcss": "^4.0.3",
         "next": "^15.0.0",
         "phaser": "^3.86.0",
+        "postcss": "^8.5.1",
         "react": "^18",
         "react-dom": "^18",
-        "sharp": "^0.33.5"
+        "sharp": "^0.33.5",
+        "tailwindcss": "^4.0.3"
     },
     "devDependencies": {
         "@types/node": "^20",

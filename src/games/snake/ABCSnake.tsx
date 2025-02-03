@@ -52,28 +52,32 @@ export const ABCSnake = forwardRef<IRefPhaserGame>(
         }, [ref]);
 
         return (
-            <>
-                <div id="game-container"></div>
-                <div className="game-wrapper">
+            <div className="w-screen h-screen flex items-center justify-center overflow-hidden flex-col gap-8">
+                <div className="text-center h-30">
+                    <h1 className="text-4xl font-bold text-teal-600 mb-4 tracking-[0.2em] uppercase font-['Press_Start_2P',_monospace]">ABC Snake</h1>
                     {isSceneReady && gameState === 'ready' && (
-                        <div className="game-overlay">
-                            <p className="start-text">Press SPACE to start</p>
+                        <div>
+                            <p className="text-emerald-600 font-['Press_Start_2P',_monospace] tracking-[0.2em] uppercase">Press SPACE to start</p>
                         </div>
                     )}
                     {gameState === 'gameover' && (
-                        <div className="game-overlay">
-                            <p className="game-over-text">Game Over</p>
-                            <p className="restart-text">Press SPACE to restart</p>
+                        <div>
+                            <p className="text-red-600 font-['Press_Start_2P',_monospace] tracking-[0.2em] uppercase">Game Over</p>
+                            <p className="text-emerald-600 font-['Press_Start_2P',_monospace] tracking-[0.2em] uppercase">Press SPACE to restart</p>
                         </div>
+
                     )}
                     {gameState === 'success' && (
-                        <div className="game-overlay">
-                            <p className="success-text">Congratulations!</p>
-                            <p className="restart-text">Press SPACE to restart</p>
+                        <div>
+                            <p className="text-amber-400 font-['Press_Start_2P',_monospace] tracking-[0.2em] uppercase animate-bounce mb-5 text-2xl">🎉 Amazing! Congratulations! 🎉</p>
+                            <p className="text-emerald-600 font-['Press_Start_2P',_monospace] tracking-[0.2em] uppercase">Press SPACE to play again</p>
                         </div>
+
                     )}
                 </div>
-            </>
+                <div id="game-container" className="min-w-[600px] min-h-[600px] flex items-center justify-center border-4 border-double border-yellow-400 rounded-lg p-2 bg-black/20"></div>
+            </div>
+
         );
     }
 );
