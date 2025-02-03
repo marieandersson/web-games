@@ -23,7 +23,7 @@ const config: Phaser.Types.Core.GameConfig = {
 
 const StartGame = (parent: string) => {
     const parentElement = document.getElementById(parent);
-    const maxSize = 800;
+    const maxSize = 600;
 
     // Calculate the smallest dimension
     const smallestDimension = Math.min(
